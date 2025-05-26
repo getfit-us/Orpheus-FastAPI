@@ -9,6 +9,7 @@ High-performance Text-to-Speech server with OpenAI-compatible API, multilingual 
 ## Changelog
 
 **v1.3.0** (2025-04-18)
+
 - 🌐 Added comprehensive multilingual support with 16 new voice actors across 7 languages
 - 🗣️ New voice actors include:
   - French: pierre, amelie, marie
@@ -30,11 +31,13 @@ High-performance Text-to-Speech server with OpenAI-compatible API, multilingual 
 - An additional Docker Compose installation path is now available, specifically for CPU-bound scenarios. This contribution comes from [@alexjyong](https://github.com/alexjyong) - thank you!
 
 **v1.2.0** (2025-04-12)
-- ❤️ Added optional Docker Compose support with GPU-enabled `llama.cpp` server and Orpheus-FastAPI integration  
-- 🐳 Docker implementation contributed by [@richardr1126](https://github.com/richardr1126) – huge thanks for the clean setup and orchestration work!  
+
+- ❤️ Added optional Docker Compose support with GPU-enabled `llama.cpp` server and Orpheus-FastAPI integration
+- 🐳 Docker implementation contributed by [@richardr1126](https://github.com/richardr1126) – huge thanks for the clean setup and orchestration work!
 - 🧱 Native install path remains unchanged for non-Docker users
 
 **v1.1.0** (2025-03-23)
+
 - ✨ Added long-form audio support with sentence-based batching and crossfade stitching
 - 🔊 Improved short audio quality with optimized token buffer handling
 - 🔄 Enhanced environment variable support with .env file loading (configurable via UI)
@@ -42,11 +45,19 @@ High-performance Text-to-Speech server with OpenAI-compatible API, multilingual 
 - 📊 Implemented detailed performance reporting for audio generation
 - ⚠️ Note: Python 3.12 is not supported due to removal of pkgutil.ImpImporter
 
+**v1.4.0** (2025-05-XX)
+
+- ⚡ Added VLLM backend support for multi-GPU and high-batching inference
+- 🐳 New `docker-compose-vllm.yml` for scalable, high-throughput deployments
+- 🔄 Environment variable `USE_VLLM` enables VLLM-specific optimizations
+- 🚀 VLLM backend enables much higher throughput and multi-GPU scaling for demanding workloads
+
 [GitHub Repository](https://github.com/Lex-au/Orpheus-FastAPI)
 
 ## Model Collection
 
 🚀 **NEW:** Try the quantized models for improved performance!
+
 - **Q2_K**: Ultra-fast inference with 2-bit quantization
 - **Q4_K_M**: Balanced quality/speed with 4-bit quantization (mixed)
 - **Q8_0**: Original high-quality 8-bit model
@@ -56,6 +67,7 @@ High-performance Text-to-Speech server with OpenAI-compatible API, multilingual 
 ## Voice Demos
 
 Listen to sample outputs with different voices and emotions:
+
 - [Default Test Sample](https://lex-au.github.io/Orpheus-FastAPI/DefaultTest.mp3) - Standard neutral tone
 - [Leah Happy Sample](https://lex-au.github.io/Orpheus-FastAPI/LeahHappy.mp3) - Cheerful, upbeat demo
 - [Tara Sad Sample](https://lex-au.github.io/Orpheus-FastAPI/TaraSad.mp3) - Emotional, melancholic demo
@@ -106,8 +118,12 @@ Orpheus-FastAPI/
 
 ### 🐳 Docker compose
 
-The docker compose file orchestrates the Orpheus-FastAPI for audio and a llama.cpp inference server for the base model token generation. The GGUF model is downloaded with the model-init service.
-There are two versions, one for machines that have access to GPU support `docker-compose-gpu.yaml` and one for CPU support only: `docker-compose-cpu.yaml`
+The docker compose file orchestrates the Orpheus-FastAPI for audio and a llama.cpp or VLLM inference server for the base model token generation. The GGUF model is downloaded with the model-init service.
+There are three versions:
+
+- For GPU support: `docker-compose-gpu.yaml`
+- For CPU support only: `docker-compose-cpu.yaml`
+- **For multi-GPU/high-batching with VLLM:** `docker-compose-vllm.yml`
 
 ```bash
 cp .env.example .env # Create your .env file from the example
@@ -115,34 +131,50 @@ copy .env.example .env # For Windows CMD
 ```
 
 For multilingual models, edit the `.env` file and change the model name:
+
 ```
 # Change this line in .env to use a language-specific model
 ORPHEUS_MODEL_NAME=Orpheus-3b-French-FT-Q8_0.gguf  # Example for French
 ```
 
-Then start the services:
+#### To use the VLLM backend (multi-GPU, high batching):
+
+1. Edit your `.env` file and set:
+   ```
+   ORPHEUS_API_URL=http://vllm-server:8000/v1/completions
+   USE_VLLM=true
+   ```
+2. Start the services:
+   ```bash
+   docker compose -f docker-compose-vllm.yml up
+   ```
+
+- The VLLM backend enables much higher throughput, multi-GPU scaling, and is ideal for large-scale or high-concurrency deployments.
+- The system will automatically download the specified model from Hugging Face before starting the service.
 
 For GPU support run
+
 ```bash
 docker compose -f docker-compose-gpu.yml up
 ```
 
 For CPU support run:
+
 ```bash
 docker compose -f docker-compose-cpu.yml up
 ```
 
-The system will automatically download the specified model from Hugging Face before starting the service.
-
 ### FastAPI Service Native Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/Lex-au/Orpheus-FastAPI.git
 cd Orpheus-FastAPI
 ```
 
 2. Create a Python virtual environment:
+
 ```bash
 # Using venv (Python's built-in virtual environment)
 python -m venv venv
@@ -154,16 +186,19 @@ conda activate orpheus-tts
 ```
 
 3. Install PyTorch with CUDA support:
+
 ```bash
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 ```
 
 4. Install other dependencies:
+
 ```bash
 pip3 install -r requirements.txt
 ```
 
 5. Set up the required directories:
+
 ```bash
 # Create directories for outputs and static files
 mkdir -p outputs static
@@ -172,11 +207,13 @@ mkdir -p outputs static
 ### Starting the Server
 
 Run the FastAPI server:
+
 ```bash
 python app.py
 ```
 
 Or with specific host/port:
+
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 5005 --reload
 ```
@@ -184,6 +221,7 @@ uvicorn app:app --host 0.0.0.0 --port 5005 --reload
 ![Terminal Output](https://lex-au.github.io/Orpheus-FastAPI/terminal.png)
 
 Access:
+
 - Web interface: http://localhost:5005/ (or http://127.0.0.1:5005/)
 - API documentation: http://localhost:5005/docs (or http://127.0.0.1:5005/docs)
 
@@ -233,6 +271,7 @@ curl -X POST http://localhost:5005/speak \
 ### Available Voices
 
 #### English
+
 - `tara`: Female, conversational, clear
 - `leah`: Female, warm, gentle
 - `jess`: Female, energetic, youthful
@@ -243,32 +282,39 @@ curl -X POST http://localhost:5005/speak \
 - `zoe`: Female, calm, soothing
 
 #### French
+
 - `pierre`: Male, sophisticated
 - `amelie`: Female, elegant
 - `marie`: Female, spirited
 
 #### German
+
 - `jana`: Female, clear
 - `thomas`: Male, authoritative
 - `max`: Male, energetic
 
 #### Korean
+
 - `유나`: Female, melodic
 - `준서`: Male, confident
 
 #### Hindi
+
 - `ऋतिका`: Female, expressive
 
 #### Mandarin
+
 - `长乐`: Female, gentle
 - `白芷`: Female, clear
 
 #### Spanish
+
 - `javi`: Male, warm
 - `sergio`: Male, professional
 - `maria`: Female, friendly
 
 #### Italian
+
 - `pietro`: Male, passionate
 - `giulia`: Female, expressive
 - `carlo`: Male, refined
@@ -303,6 +349,7 @@ This server works as a frontend that connects to an external LLM inference serve
 The system features intelligent hardware detection that automatically optimizes performance based on your hardware capabilities:
 
 - **High-End GPU Mode** (dynamically detected based on capabilities):
+
   - Triggered by either: 16GB+ VRAM, compute capability 8.0+, or 12GB+ VRAM with 7.0+ compute capability
   - Advanced parallel processing with 4 workers
   - Optimized batch sizes (32 tokens)
@@ -311,6 +358,7 @@ The system features intelligent hardware detection that automatically optimizes 
   - GPU-specific optimizations automatically applied
 
 - **Standard GPU Mode** (other CUDA-capable GPUs):
+
   - Efficient parallel processing
   - GPU-optimized parameters
   - CUDA acceleration where beneficial
@@ -328,6 +376,7 @@ No manual configuration is needed - the system automatically detects hardware ca
 ### Token Processing Optimization
 
 The token processing system has been optimized with mathematically aligned parameters:
+
 - Uses a context window of 49 tokens (7²)
 - Processes in batches of 7 tokens (Orpheus model standard)
 - This square relationship ensures complete token processing with no missed tokens
@@ -337,7 +386,8 @@ The token processing system has been optimized with mathematically aligned param
 ### Long Text Processing
 
 The system features efficient batch processing for texts of any length:
-- Automatically detects longer inputs (>1000 characters) 
+
+- Automatically detects longer inputs (>1000 characters)
 - Splits text at logical points to create manageable chunks
 - Processes each chunk independently for reliability
 - Combines audio segments with smooth 50ms crossfades
@@ -366,11 +416,13 @@ This application requires a separate LLM inference server running the Orpheus mo
 - [GPUStack](https://github.com/gpustack/gpustack) - GPU optimised LLM inference server (My pick) - supports LAN/WAN tensor split parallelisation
 - [LM Studio](https://lmstudio.ai/) - Load the GGUF model and start the local server
 - [llama.cpp server](https://github.com/ggerganov/llama.cpp) - Run with the appropriate model parameters
+- **[VLLM](https://github.com/vllm-project/vllm) - Multi-GPU, high-batching OpenAI-compatible inference server**
 - Any compatible OpenAI API-compatible server
 
 **Quantized Model Options:**
+
 - **lex-au/Orpheus-3b-FT-Q2_K.gguf**: Fastest inference (~50% faster tokens/sec than Q8_0)
-- **lex-au/Orpheus-3b-FT-Q4_K_M.gguf**: Balanced quality/speed 
+- **lex-au/Orpheus-3b-FT-Q4_K_M.gguf**: Balanced quality/speed
 - **lex-au/Orpheus-3b-FT-Q8_0.gguf**: Original high-quality model
 
 Choose based on your hardware and needs. Lower bit models (Q2_K, Q4_K_M) provide ~2x realtime performance on high-end GPUs.
@@ -383,7 +435,8 @@ The inference server should be configured to expose an API endpoint that this Fa
 
 Configure in docker compose, if using docker. Not using docker; create a `.env` file:
 
-- `ORPHEUS_API_URL`: URL of the LLM inference API (default in Docker: http://llama-cpp-server:5006/v1/completions)
+- `ORPHEUS_API_URL`: URL of the LLM inference API (default in Docker: http://llama-cpp-server:5006/v1/completions, for VLLM: http://vllm-server:8000/v1/completions)
+- `USE_VLLM`: Set to `true` to enable VLLM-specific optimizations (payload and parameter compatibility)
 - `ORPHEUS_API_TIMEOUT`: Timeout in seconds for API requests (default: 120)
 - `ORPHEUS_MAX_TOKENS`: Maximum tokens to generate (default: 8192)
 - `ORPHEUS_TEMPERATURE`: Temperature for generation (default: 0.6)
@@ -406,7 +459,7 @@ Make sure the `ORPHEUS_API_URL` points to your running inference server.
 ### Project Components
 
 - **app.py**: FastAPI server that handles HTTP requests and serves the web UI
-- **tts_engine/inference.py**: Handles token generation and API communication 
+- **tts_engine/inference.py**: Handles token generation and API communication
 - **tts_engine/speechpipe.py**: Converts token sequences to audio using the SNAC model
 
 ### Adding New Voices
@@ -425,11 +478,13 @@ When running the Orpheus model with llama.cpp, use these parameters to ensure op
 ```
 
 Important parameters:
+
 - `--ctx-size`: Sets the context window size, should match your ORPHEUS_MAX_TOKENS setting
 - `--n-predict`: Maximum tokens to generate, should match your ORPHEUS_MAX_TOKENS setting
 - `--rope-scaling=linear`: Required for optimal positional encoding with the Orpheus model
 
 For extended audio generation (books, long narrations), you may want to increase your token limits:
+
 1. Set ORPHEUS_MAX_TOKENS to 32768 or higher in your .env file (or via the Web UI)
 2. Increase ORPHEUS_API_TIMEOUT to 1800 for longer processing times
 3. Use the same values in your llama.cpp parameters (if you're using llama.cpp)
