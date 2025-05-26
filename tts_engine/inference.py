@@ -243,6 +243,8 @@ def generate_tokens_from_api(prompt: str, voice: str = DEFAULT_VOICE, temperatur
     start_time = time.time()
     formatted_prompt = format_prompt(prompt, voice)
     print(f"Generating speech for: {formatted_prompt}")
+   
+        
     
     # Optimize the token generation for GPUs
     if HIGH_END_GPU:
@@ -257,9 +259,15 @@ def generate_tokens_from_api(prompt: str, voice: str = DEFAULT_VOICE, temperatur
         "max_tokens": max_tokens,
         "temperature": temperature,
         "top_p": top_p,
-        "repeat_penalty": repetition_penalty,
         "stream": True  # Always stream for better performance
+        
+    
     }
+    
+    if os.environ.get("ORPHEUS_USE_VLLM", "false").lower() == "true":
+        payload["repeat_penalty"] = repetition_penalty
+    else:
+        payload["repeat_penalty"] = repetition_penalty
     
     # Add model field - this is ignored by many local inference servers for /v1/completions
     # but included for compatibility with OpenAI API and some servers that may use it
@@ -884,7 +892,7 @@ def main():
     parser.add_argument("--temperature", type=float, default=TEMPERATURE, help="Temperature for generation")
     parser.add_argument("--top_p", type=float, default=TOP_P, help="Top-p sampling parameter")
     parser.add_argument("--repetition_penalty", type=float, default=REPETITION_PENALTY, 
-                       help="Repetition penalty (fixed at 1.1 for stable generation - parameter kept for compatibility)")
+    help="Repetition penalty (fixed at 1.1 for stable generation - parameter kept for compatibility)")
     
     args = parser.parse_args()
     

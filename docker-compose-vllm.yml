@@ -1,0 +1,37 @@
+services:
+  orpheus-fastapi:
+    container_name: orpheus-fastapi
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    ports:
+      - "5005:5005"
+    env_file:
+      - .env
+    environment:
+      - ORPHEUS_API_URL=http://llama-cpp-server:5006/v1/completions
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+    depends_on:
+      vllm-server:
+        condition: service_started
+
+  vllm-server:
+    image: vllm/vllm-openai:latest
+    deploy:
+      runtime: nvidia
+      gpus: all
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    environment:
+      HUGGING_FACE_HUB_TOKEN: <secret>
+    ports:
+      - 8880:8000
+    ipc: host
+    command: --model canopylabs/orpheus-3b-0.1-ft --served-model-name orpheus --max-model-len 131072 --gpu-memory-utilization 0.8 -tp 4
