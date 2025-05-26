@@ -289,7 +289,7 @@ def generate_tokens_from_api(
         "stream": True,  # Always stream for better performance
     }
 
-    if os.environ.get("ORPHEUS_USE_VLLM", "false").lower() == "true":
+    if os.environ.get("USE_VLLM", "false").lower() == "true":
         payload["repetition_penalty"] = repetition_penalty
     else:
         payload["repeat_penalty"] = repetition_penalty
