@@ -7,6 +7,7 @@ import time
 import asyncio
 from datetime import datetime
 from typing import List, Optional
+import uuid
 from dotenv import load_dotenv
 
 # Function to ensure .env file exists
@@ -104,7 +105,8 @@ async def create_speech_api(request: SpeechRequest):
     
     # Generate unique filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = f"outputs/{request.voice}_{timestamp}.wav"
+    unique_id = str(uuid.uuid4())
+    output_path = f"outputs/{request.voice}_{timestamp}_{unique_id}.wav"
     
     # Check if we should use batched generation
     use_batching = len(request.input) > 1000
@@ -127,7 +129,7 @@ async def create_speech_api(request: SpeechRequest):
     return FileResponse(
         path=output_path,
         media_type="audio/wav",
-        filename=f"{request.voice}_{timestamp}.wav"
+        filename=f"{request.voice}_{timestamp}_{unique_id}.wav"
     )
 
 @app.get("/v1/audio/voices")
@@ -157,7 +159,8 @@ async def speak(request: Request):
         )
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = f"outputs/{voice}_{timestamp}.wav"
+    unique_id = str(uuid.uuid4())
+    output_path = f"outputs/{voice}_{timestamp}_{unique_id}.wav"
     
     # Check if we should use batched generation for longer texts
     use_batching = len(text) > 1000

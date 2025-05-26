@@ -1,5 +1,6 @@
 import os
 import sys
+import uuid
 import requests
 import json
 import time
@@ -227,7 +228,6 @@ class PerformanceMonitor:
             return
 
         tokens_per_sec = self.token_count / elapsed
-        chunks_per_sec = self.audio_chunks / elapsed
 
         # Estimate audio duration based on audio chunks (each chunk is ~0.085s of audio)
         est_duration = self.audio_chunks * 0.085
@@ -820,7 +820,10 @@ def generate_speech_from_api(
         # Create a temporary file for this batch if an output file is requested
         temp_output_file = None
         if output_file:
-            temp_output_file = f"outputs/temp_batch_{i}_{int(time.time())}.wav"
+            unique_id = str(uuid.uuid4())
+            temp_output_file = (
+                f"outputs/temp_batch_{i}_{int(time.time())}_{unique_id}.wav"
+            )
             batch_temp_files.append(temp_output_file)
 
         # Generate speech for this batch
