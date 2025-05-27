@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     environment:
-      - ORPHEUS_API_URL=http://llama-cpp-server:5006/v1/completions
+      - ORPHEUS_API_URL=http://vllm-server:8880/v1/completions
     deploy:
       resources:
         reservations:
@@ -34,4 +34,4 @@ services:
     ports:
       - 8880:8000
     ipc: host
-    command: --model canopylabs/orpheus-3b-0.1-ft --served-model-name orpheus --max-model-len 131072 --gpu-memory-utilization 0.8 -tp 4
+    command: --model canopylabs/orpheus-3b-0.1-ft --served-model-name orpheus --max-model-len 131072 --gpu-memory-utilization 0.8 -tp 4 --quantization fp8
