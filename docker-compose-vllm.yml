@@ -4,12 +4,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.gpu
+      
     ports:
       - "5005:5005"
     env_file:
       - .env
     environment:
-      - ORPHEUS_API_URL=http://vllm-server:8880/v1/completions
+      - ORPHEUS_API_URL=http://vllm-server:8000/v1/completions
+      - NUM_OF_WORKERS=1
     deploy:
       resources:
         reservations:
@@ -24,14 +26,13 @@ services:
 
   vllm-server:
     image: vllm/vllm-openai:latest
-    deploy:
-      runtime: nvidia
-      gpus: all
+    gpus: all
+
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
     environment:
-      HUGGING_FACE_HUB_TOKEN: <secret>
+      HUGGING_FACE_HUB_TOKEN:
     ports:
       - 8880:8000
     ipc: host
-    command: --model canopylabs/orpheus-3b-0.1-ft --served-model-name orpheus --max-model-len 131072 --gpu-memory-utilization 0.8 -tp 4 --quantization fp8
+    command: --model getfit/orpheus-3b-0.1-ft-FP8-Dynamic --served-model-name orpheus --max-model-len 32768 --gpu-memory-utilization 0.8
