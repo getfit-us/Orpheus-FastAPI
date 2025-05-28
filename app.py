@@ -143,6 +143,17 @@ async def list_voices():
             "voices": AVAILABLE_VOICES
         }
     )
+    
+    
+@app.get("/v1/audio/models")
+async def list_models():
+    """Return list of available models"""
+    return JSONResponse(
+        content={
+            "status": "ok",
+            "models": ["orpheus"]
+        }
+    )
 
 # Legacy API endpoint for compatibility
 @app.post("/speak")
